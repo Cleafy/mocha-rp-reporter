@@ -10,6 +10,8 @@ function RPReporter(runner, options) {
     let launchId = null;
     let suiteIds = {};
     let testIds = {};
+    let suiteStack = [];
+
     // load config
     try {
         config = options.reporterOptions.configOptions ? options.reporterOptions.configOptions : require(path.join(process.cwd(), options.reporterOptions.configFile));
@@ -55,17 +57,33 @@ function RPReporter(runner, options) {
     });
 
     runner.on('suite', function(suite){
+        console.log(suite.title);
         if(suite.title === "") {
             return true;
         } else {
             try {
-                let res = connector.startRootItem({
-                    name: suite.title,
-                    launch: launchId,
-                    description: suite.fullTitle(),
-                    type: connector.RP_ITEM_TYPE.SUITE
-                });
-                suiteIds[suite.title] = res.body.id;
+                let res = null;
+
+                if (suiteStack.length == 0) {
+                    res = connector.startRootItem({
+                        name: suite.title,
+                        launch: launchId,
+                        description: suite.fullTitle(),
+                        type: connector.RP_ITEM_TYPE.SUITE
+                    });
+                } else {
+                    res = connector.startChildItem({
+                        name: suite.title,
+                        launch: launchId,
+                        description: suite.fullTitle(),
+                        type: connector.RP_ITEM_TYPE.SUITE
+                    }, suiteIds[suiteStack[suiteStack.length - 1].title]);
+                }
+
+                suiteStack.push(suite);
+
+                if (res)
+                    suiteIds[suite.title] = res.body.id;
             } catch (err) {
                 console.log(`Failed to create root item. Error: ${err}`);
             }
@@ -73,11 +91,13 @@ function RPReporter(runner, options) {
     });
 
     runner.on('suite end', function(suite){
+        console.log('end ' + suite.title);
         try {
             connector.finishItem({
                 status: suite.tests.filter(test => test.state === "failed").length > 0 ? "failed" : "passed",
                 id: suiteIds[suite.title]
             });
+            suiteStack.pop();
         } catch (err) {
             console.log(`Failed to create child item. Error: ${err}`);
         }
