@@ -31,7 +31,7 @@ function RPReporter(runner, options) {
                 message: err.message
             });
         } catch (err) {
-            console.log(`Failed to send log for item. Error: ${err}`);
+            console.error(`Failed to send log for item. Error: ${err}`);
         }
     });
 
@@ -40,7 +40,7 @@ function RPReporter(runner, options) {
             let res = connector.startLaunch();
             launchId = res.body.id;
         } catch (err) {
-            console.log(`Failed to launch run. Error: ${err}`);
+            console.error(`Failed to launch run. Error: ${err}`);
         }
 
 
@@ -50,7 +50,7 @@ function RPReporter(runner, options) {
         try {
             connector.finishLaunch(launchId);
         } catch (err) {
-            console.log(`Failed to finish run. Error: ${err}`);
+            console.error(`Failed to finish run. Error: ${err}`);
         }
 
 
@@ -84,7 +84,7 @@ function RPReporter(runner, options) {
                 if (res)
                     suiteIds[suite.title] = res.body.id;
             } catch (err) {
-                console.log(`Failed to create root item. Error: ${err}`);
+                console.error(`Failed to create root item. Error: ${err}`);
             }
         }
     });
@@ -97,7 +97,7 @@ function RPReporter(runner, options) {
             });
             suiteStack.pop();
         } catch (err) {
-            console.log(`Failed to create child item. Error: ${err}`);
+            console.error(`Failed to create child item. Error: ${err}`);
         }
     });
 
@@ -111,7 +111,7 @@ function RPReporter(runner, options) {
             }, suiteIds[test.parent.title]);
             testIds[test.title] = res.body.id;
         } catch (err) {
-            console.log(`Failed to create child item. Error: ${err}`);
+            console.error(`Failed to create child item. Error: ${err}`);
         }
     });
 
@@ -134,7 +134,7 @@ function RPReporter(runner, options) {
                 id: res.body.id
             });
         } catch (err) {
-            console.log(`Failed to create child item. Error: ${err}`);
+            console.error(`Failed to create child item. Error: ${err}`);
         }
     });
 
@@ -145,7 +145,7 @@ function RPReporter(runner, options) {
                 id: testIds[test.title]
             });
         } catch (err) {
-            console.log(`Failed to create child item. Error: ${err}`);
+            console.error(`Failed to create child item. Error: ${err}`);
         }
     });
 }
