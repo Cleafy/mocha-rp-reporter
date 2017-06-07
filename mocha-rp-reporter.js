@@ -57,7 +57,6 @@ function RPReporter(runner, options) {
     });
 
     runner.on('suite', function(suite){
-        console.log(suite.title);
         if(suite.title === "") {
             return true;
         } else {
@@ -91,7 +90,6 @@ function RPReporter(runner, options) {
     });
 
     runner.on('suite end', function(suite){
-        console.log('end ' + suite.title);
         try {
             connector.finishItem({
                 status: suite.tests.filter(test => test.state === "failed").length > 0 ? "failed" : "passed",
