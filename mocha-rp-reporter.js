@@ -9,7 +9,31 @@ function RPReporter(runner, options) {
 
     let config;
     var phase = options.reporterOptions.phase || 'complete_test';
-    var launchId = phase == 'start' || phase == 'complete_test' ? null : fs.readFileSync(path.join(process.cwd(), 'phase'), 'utf8');
+    var launchId = null;
+
+    if (phase != 'complete_test') {
+        if (phase == 'start' && !(typeof options.reporterOptions.launchidfile === 'string'))
+            throw 'Parameter file missing or wrong';
+        else {
+            if ('file' in options.reporterOptions) {
+                try {//try to find file in cwd
+                    launchId = fs.readFileSync(path.join(process.cwd(), options.reporterOptions.launchidfile), 'utf8');
+                } catch (err) {
+                    try {//try to find file in absolute path
+                        launchId = fs.readFileSync(options.reporterOptions.launchidfile, 'utf8');
+                    } catch (err) {
+                        throw `Failed to load launchId. Error: ${err}`;
+                    }
+                }
+            } else {//try to convert arg in launchId
+                if ('launchId' in options.reporterOptions)
+                    launchId = options.reporterOptions.launchId;
+                else
+                    throw `Failed to load launchId`;
+            }
+        }
+    }
+
     let suiteIds = {};
     let testIds = {};
     let suiteStack = [];
@@ -42,10 +66,14 @@ function RPReporter(runner, options) {
             try {
                 let res = connector.startLaunch();
                 launchId = res.body.id;
-                fs.writeFileSync(path.join(process.cwd(), 'phase'), launchId);
             } catch (err) {
                 console.error(`Failed to launch run. Error: ${err}`);
             }
+            if (phase == 'start')
+                if (options.reporterOptions.launchidfile.starsWith('/'))
+                    fs.writeFileSync(options.reporterOptions.launchidfile, launchId);
+                else
+                    fs.writeFileSync(path.join(process.cwd(), options.reporterOptions.launchidfile), launchId);
         }
     });
 
