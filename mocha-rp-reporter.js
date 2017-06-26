@@ -2,12 +2,14 @@
 
 const mocha = require('mocha');
 const path = require('path');
+const fs = require('fs');
 
 function RPReporter(runner, options) {
     mocha.reporters.Base.call(this, runner);
 
     let config;
-    let launchId = null;
+    var phase = options.reporterOptions.phase || 'complete_test';
+    var launchId = phase == 'start' || phase == 'complete_test' ? null : fs.readFileSync(path.join(process.cwd(), 'phase'), 'utf8');
     let suiteIds = {};
     let testIds = {};
     let suiteStack = [];
@@ -36,24 +38,25 @@ function RPReporter(runner, options) {
     });
 
     runner.on('start', function()  {
-        try {
-            let res = connector.startLaunch();
-            launchId = res.body.id;
-        } catch (err) {
-            console.error(`Failed to launch run. Error: ${err}`);
+        if (phase == 'start' || phase == 'complete_test') {
+            try {
+                let res = connector.startLaunch();
+                launchId = res.body.id;
+                fs.writeFileSync(path.join(process.cwd(), 'phase'), launchId);
+            } catch (err) {
+                console.error(`Failed to launch run. Error: ${err}`);
+            }
         }
-
-
     });
 
     runner.on('end', function(){
-        try {
-            connector.finishLaunch(launchId);
-        } catch (err) {
-            console.error(`Failed to finish run. Error: ${err}`);
+        if (phase == 'end' || phase == 'complete_test') {
+            try {
+                connector.finishLaunch(launchId);
+            } catch (err) {
+                console.error(`Failed to finish run. Error: ${err}`);
+            }
         }
-
-
     });
 
     runner.on('suite', function(suite){
@@ -127,7 +130,7 @@ function RPReporter(runner, options) {
             connector.sendLog(res.body.id, {
                 level: connector.RP_LEVEL.SKIPPED,
                 message: test.title
-            })
+            });
 
             connector.finishItem({
                 status: connector.RP_STATUS.SKIPPED,
