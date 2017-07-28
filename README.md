@@ -45,11 +45,14 @@ let mochaMain = new Mocha({
 }
 ```
 
-By default reporter will use `configOptions` otherwise will try to load file from `configFile`
+By default, this reporter will use `configOptions` otherwise will try to load file from `configFile`
 
-######WARNING: Test execution will slow down due to sync request to RP 
+#### New feature
+Now you can execute more than one mocha test and rp will show them in one launch collection.
+Add `phase`(=start, end, or test) among the report options (--reporter-options or -O), to specify if it is the first, last or the others.
+You *always* have to specify `launchidfile` as report option parameter:
+ - when it is used with `phase=start`, it is a the file path where the launch id is stored;
+ - in all other cases, it's the file path where this reporter will find the launch id needed to continue the same testing session.
 
 
-
-
-
+###### WARNING: Test execution will slow down due to sync request to RP
