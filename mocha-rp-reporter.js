@@ -12,24 +12,15 @@ function RPReporter(runner, options) {
     var launchId = null;
 
     if (phase != 'complete_test') {
-        if (phase == 'start' && !(typeof options.reporterOptions.launchidfile === 'string'))
+        if (!(typeof options.reporterOptions.launchidfile === 'string'))
             throw 'Parameter file missing or wrong';
         else {
-            if ('file' in options.reporterOptions) {
-                try {//try to find file in cwd
-                    launchId = fs.readFileSync(path.join(process.cwd(), options.reporterOptions.launchidfile), 'utf8');
+            if (phase != 'start') {
+                try {//try to find file in cwd or in absolute path
+                    launchId = fs.readFileSync(path.resolve(options.reporterOptions.launchidfile), 'utf8');
                 } catch (err) {
-                    try {//try to find file in absolute path
-                        launchId = fs.readFileSync(options.reporterOptions.launchidfile, 'utf8');
-                    } catch (err) {
-                        throw `Failed to load launchId. Error: ${err}`;
-                    }
+                    throw `Failed to load launchId. ${err}`;
                 }
-            } else {//try to convert arg in launchId
-                if ('launchId' in options.reporterOptions)
-                    launchId = options.reporterOptions.launchId;
-                else
-                    throw `Failed to load launchId`;
             }
         }
     }
@@ -70,10 +61,7 @@ function RPReporter(runner, options) {
                 console.error(`Failed to launch run. Error: ${err}`);
             }
             if (phase == 'start')
-                if (options.reporterOptions.launchidfile.starsWith('/'))
-                    fs.writeFileSync(options.reporterOptions.launchidfile, launchId);
-                else
-                    fs.writeFileSync(path.join(process.cwd(), options.reporterOptions.launchidfile), launchId);
+                fs.writeFileSync(path.resolve(options.reporterOptions.launchidfile), launchId);
         }
     });
 
