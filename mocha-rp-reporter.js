@@ -122,7 +122,6 @@ function RPReporter(runner, options) {
                 level: connector.RP_LEVEL.FAILED,
                 message: err.message
             });
-            console.log('\t [FAIL] with test: '+JSON.stringify(test));
         } catch (err) {
             console.error(`Failed to send log for item. Error: ${err}`);
         }
