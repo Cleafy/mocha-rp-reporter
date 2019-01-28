@@ -189,7 +189,7 @@ function RPReporter(runner, options) {
                 status: suite.tests.filter(test => test.state === 'failed').length > 0 ? 'failed' : 'passed',
                 id: suiteIds[suite.title]
             });
-            console.log({∏
+            console.log({
                 status: suite.tests.filter(test => test.state === 'failed').length > 0 ? 'failed' : 'passed',
                 id: suiteIds[suite.title]
             })
@@ -213,6 +213,6 @@ function RPReporter(runner, options) {
         }
         console.log('Exiting on end...');
     })
-}∏
+}
 
 module.exports = RPReporter;
