@@ -72,7 +72,7 @@ function RPReporter(runner, options) {
             return
         }
         try {
-            console.log('\t [SUITE] with suite: '+suite);
+            console.log('\t [SUITE] with suite: '+JSON.stringify(suite));
             const options = {
                 name: suite.title,
                 launch: launchId,
