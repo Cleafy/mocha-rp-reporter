@@ -51,11 +51,11 @@ function RPReporter(runner, options) {
     let suiteStack = [];
 
     runner.on('start', function()  {
-        console.log('Entering on start... with phase: '+phase);
+        console.log('[SATRT] Entering... with phase: '+phase);
         if (phase == 'start' || phase == 'complete_test') {
             try {
                 launchId = (connector.startLaunch()).body.id
-                console.log('launchId: '+launchId);
+                console.log('\t [START] launchId: '+launchId);
             } catch (err) {
                 console.error(`Failed to launch run. Error: ${err}`);
             }
@@ -63,27 +63,27 @@ function RPReporter(runner, options) {
                 fs.writeFileSync(path.resolve(options.reporterOptions.launchidfile), launchId);
             }
         }
-        console.log('Exiting on start...');
+        console.log('[START] Exiting...');
     })
 
     runner.on('suite', function(suite) {
-        console.log('Entering on suite...');
+        console.log('[SUITE] Entering on suite...');
         if (suite.title === '') {
             return
         }
         try {
-            console.log('with suite: '+suite);
+            console.log('\t [SUITE] with suite: '+suite);
             const options = {
                 name: suite.title,
                 launch: launchId,
                 description: suite.fullTitle(),
                 type: connector.RP_ITEM_TYPE.SUITE
             }
-            console.log('with options: '+options);
+            console.log('\t [SUITE] with options: '+JSON.stringify(options));
             const res = suiteStack.length == 0
                 ? connector.startRootItem(options)
                 : connector.startChildItem(options, suiteIds[suiteStack[suiteStack.length - 1].title])
-            console.log('with res: '+res);
+            console.log('\t [SUITE] with res: '+JSON.stringify(res));
             suiteStack.push(suite);
 
             if (res) {
@@ -92,11 +92,11 @@ function RPReporter(runner, options) {
         } catch (err) {
             console.error(`Failed to create root item. Error: ${err}`);
         }
-        console.log('Exiting on suite...');
+        console.log('[SUITE] Exiting...');
     })
 
     runner.on('test', function(test) {
-        console.log('Entering on test...');
+        console.log('[TEST] Entering...');
         try {
             const res = connector.startChildItem({
                 name: test.title,
@@ -104,33 +104,33 @@ function RPReporter(runner, options) {
                 description: test.fullTitle(),
                 type: connector.RP_ITEM_TYPE.TEST
             }, suiteIds[test.parent.title]);
-            console.log('with res: '+res);
+            console.log('\t [TEST] with res: '+JSON.stringify(res));
             testIds[test.title] = res.body.id
         } catch (err) {
             console.error(`Failed to create child item. Error: ${err}`);
         }
-        console.log('Exiting on test...');
+        console.log('[TEST] Exiting...');
     })
 
-    runner.on('pass', function(test) {console.log('Entring and exiting on pass')})
+    runner.on('pass', function(test) {console.log('[PASS] Entring and exiting...')})
 
     runner.on('fail', function(test, err) {
-        console.log('Entering on fail...');
+        console.log('[FAIL] Entering...');
         try {
     
             connector.sendLog(testIds[test.title], {
                 level: connector.RP_LEVEL.FAILED,
                 message: err.message
             });
-            console.log('with test...');
+            console.log('\t [FAIL] with test: '+JSON.stringify(test));
         } catch (err) {
             console.error(`Failed to send log for item. Error: ${err}`);
         }
-        console.log('Exiting on fail...');
+        console.log('[FAIL] Exiting...');
     })
 
     runner.on('pending', function (test) {
-        console.log('Entering on pending...');
+        console.log('[PENDING] Entering...');
         try {
             const res = connector.startChildItem({
                 name: test.title,
@@ -138,13 +138,13 @@ function RPReporter(runner, options) {
                 description: test.fullTitle(),
                 type: connector.RP_ITEM_TYPE.TEST
             }, suiteIds[test.parent.title])
-            console.log('with res: '+res);
+            console.log('\t [PENDING] with res: '+JSON.stringify(res));
 
             connector.sendLog(res.body.id, {
                 level: connector.RP_LEVEL.SKIPPED,
                 message: test.title
             })
-            console.log('with body: '+body);
+            console.log('\t [PENDING] with body: '+JSON.stringify(body));
 
             connector.finishItem({
                 status: connector.RP_STATUS.SKIPPED,
@@ -153,21 +153,21 @@ function RPReporter(runner, options) {
         } catch (err) {
             console.error(`Failed to create child item. Error: ${err}`);
         }
-        console.log('Exiting on pending...');
+        console.log('[PENDING] Exiting...');
     })
 
     runner.on('test end', function(test) {
         // Try to finish a skipped item that it has just been closed
         // So we do nothing
-        console.log('Entering on test end...');
+        console.log('[TEST END] Entering...');
         if (typeof test.state === 'undefined') {
             return
         }
         try {
-            console.log({
+            console.log('\t [TEST END] ' + JSON.stringify({
                 status: test.state,
                 id: testIds[test.title]
-            });
+            }));
             connector.finishItem({
                 status: test.state,
                 id: testIds[test.title]
@@ -175,12 +175,12 @@ function RPReporter(runner, options) {
         } catch (err) {
             console.error(`Failed to create child item. Error: ${err}`);
         }
-        console.log('Exiting on test end...');
+        console.log('[TEST END] Exiting...');
     })
 
     runner.on('suite end', function(suite) {
-        console.log('Entering on suite end...');
-        console.log('with suite: '+suite);
+        console.log('[SUITE END] Entering...');
+        console.log('\t [SUITE END] with suite: '+suite);
         if (suite.title === '') {
             return
         }
@@ -189,21 +189,21 @@ function RPReporter(runner, options) {
                 status: suite.tests.filter(test => test.state === 'failed').length > 0 ? 'failed' : 'passed',
                 id: suiteIds[suite.title]
             });
-            console.log({
+            console.log('\t [SUITE END] '+JSON.stringify({
                 status: suite.tests.filter(test => test.state === 'failed').length > 0 ? 'failed' : 'passed',
                 id: suiteIds[suite.title]
-            })
+            }));
             suiteStack.pop();
         } catch (err) {
             console.error(`Failed to create child item. Error: ${err}`);
         }
-        console.log('Exiting on suite end...');
+        console.log('[SUITE END] Exiting...');
     })
 
     runner.on('end', function(){
-        console.log('Entering on end...')
-        console.log('with phase: '+phase);
-        console.log('with launchId: '+launchId);
+        console.log('[END] Entering...')
+        console.log('\t [END] with phase: '+phase);
+        console.log('\t [END] with launchId: '+launchId);
         if (phase == 'end' || phase == 'complete_test') {
             try {
                 connector.finishLaunch(launchId);
@@ -211,7 +211,7 @@ function RPReporter(runner, options) {
                 console.error(`Failed to finish run. Error: ${err}`);
             }
         }
-        console.log('Exiting on end...');
+        console.log('[END] Exiting ...');
     })
 }
 
