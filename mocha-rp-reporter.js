@@ -116,8 +116,8 @@ function RPReporter(runner, options) {
     runner.on('fail', function(test, err) {
         console.log('[FAIL] Entering...');
         try {
-            console.log('\t [FAIL] '+err.message);
-            console.log('\t [FAIL] '+JSON.stringify(testIds));
+            console.log('\t [FAIL] error '+err.message);
+            console.log('\t [FAIL] ids '+JSON.stringify(testIds));
             connector.sendLog(testIds[test.title], {
                 level: connector.RP_LEVEL.FAILED,
                 message: err.message
