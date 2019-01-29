@@ -179,7 +179,6 @@ function RPReporter(runner, options) {
 
     runner.on('suite end', function(suite) {
         console.log('[SUITE END] Entering...');
-        console.log('\t [SUITE END] with suite: '+JSON.stringify(suite));
         if (suite.title === '') {
             return
         }
