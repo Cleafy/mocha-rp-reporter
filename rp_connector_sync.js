@@ -152,7 +152,8 @@ class ReportPortalClient {
         }
 
         try {
-            return client.put([_self.config.endpoint, _self.config.project, 'item', item.id].join('/') + _self.token, request);
+            var resPut = client.put([_self.config.endpoint, _self.config.project, 'item', item.id].join('/') + _self.token, request);
+            console.log('\t [FINISH-ITEM] put response: '+JSON.stringify(resPut));
         } catch (err) {
             _self.errorHandler(err);
         }
