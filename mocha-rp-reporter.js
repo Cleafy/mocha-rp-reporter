@@ -72,7 +72,6 @@ function RPReporter(runner, options) {
             return
         }
         try {
-            console.log('\t [SUITE] with suite: '+JSON.stringify(suite));
             const options = {
                 name: suite.title,
                 launch: launchId,
@@ -117,13 +116,14 @@ function RPReporter(runner, options) {
     runner.on('fail', function(test, err) {
         console.log('[FAIL] Entering...');
         try {
-    
+            console.log('\t [FAIL] '+err.message);
+            console.log('\t [FAIL] '+JSON.stringify(testIds));
             connector.sendLog(testIds[test.title], {
                 level: connector.RP_LEVEL.FAILED,
                 message: err.message
             });
-        } catch (err) {
-            console.error(`Failed to send log for item. Error: ${err}`);
+        } catch (error) {
+            console.error(`Failed to send log for item. Error: ${error}`);
         }
         console.log('[FAIL] Exiting...');
     })
@@ -179,7 +179,7 @@ function RPReporter(runner, options) {
 
     runner.on('suite end', function(suite) {
         console.log('[SUITE END] Entering...');
-        console.log('\t [SUITE END] with suite: '+suite);
+        console.log('\t [SUITE END] with suite: '+JSON.stringify(suite));
         if (suite.title === '') {
             return
         }
