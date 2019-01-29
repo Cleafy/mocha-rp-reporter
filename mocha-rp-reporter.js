@@ -145,10 +145,10 @@ function RPReporter(runner, options) {
             })
             console.log('\t [PENDING] with body: '+JSON.stringify(res.body));
 
-            connector.finishItem('\t [PENDING] '+JSON.stringify({
+            connector.finishItem({
                 status: connector.RP_STATUS.SKIPPED,
                 id: res.body.id
-            }))
+            })
         } catch (err) {
             console.error(`Failed to create child item. Error: ${err}`);
         }
